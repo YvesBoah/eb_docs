@@ -1,0 +1,24 @@
+{
+"name":"Secure_Key_Token",
+	"param":{
+		"USR_LOGIN":"cw",
+		"USR_PASS":"7e07c07e2e425be7a94df4df618c61a9"
+	}
+}
+
+{
+"name":"EncaissementFacturesClient",
+	"param":{
+		"DET_REFDETTE":"0820110069436",
+		"ENC_MONTANT" :100
+	}
+}
+
+{
+    "name": "ListAllFactures"
+}
+
+{
+"name":"SoldeClient",
+"param":{"DET_REFDETTE":"0620160005869"}
+}
