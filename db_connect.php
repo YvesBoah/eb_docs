@@ -7,12 +7,12 @@
 	 */
 	class Db_connect 
 	{
-		Private $hote = 'localhost';
+		Private $hote = '192.168.23.128';
 		Private $port = "3306";
 		Private $nom_bdd = 'bdcaisseweb';
 		// Private $nom_bdd = 'api_test';
 		Private $utilisateur = 'root';
-		Private $mot_de_passe ='';
+		Private $mot_de_passe ='djegDEV15';
 
 		public function connect()
 		{

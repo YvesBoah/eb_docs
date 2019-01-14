@@ -275,11 +275,12 @@
 		       // Status requête
 		    if(count($resultats1) > 0){
 			    $Status['nombre_success'] = 1;
+			    $Status['Facture'] = "Facture trouvée";
 			    // $this->ReturnResponse($Status,$resultats1);
 			}else{
-				 $Status['status'] = REQUEST_NOT_VALID; 
-			     $Status['message'] = "Facture non trouvée";
+				 // $Status['status'] = REQUEST_NOT_VALID; 
 			     $Status['Nombre_erreur'] += 1;
+			     $Status['Facture'] = "Facture non trouvée";
 			}
 		    	
 		    // Requête (1)
@@ -328,12 +329,12 @@
 		    if($resultat_encaissement1){
 
 			    // $Status['status'] = SUCCESS_RESPONSE; 
-			    // $Status['message'] = "cw_encaissement remplie ";
+			    $Status['cw_encaissement'] = "cw_encaissement remplie ";
 			    $Status['nombre_success'] += 1;
 			    // $this->ReturnResponse($Status,$resultats1);
 			}else{
-				 $Status['status'] = REQUEST_NOT_VALID; 
-			     $Status['message'] = "cw_encaissement non remplie";
+				 // $Status['status'] = REQUEST_NOT_VALID; 
+			     $Status['cw_encaissement'] = "cw_encaissement non remplie";
 			     $Status['Nombre_erreur'] += 1;
 			}
 		    // $ENC_ID = $this->ENC_ID;/**/
@@ -377,13 +378,13 @@
 		     if($resultat_cw_sync_encaissement){
 
 			    // $Status['status'] = SUCCESS_RESPONSE; 
-			    // $Status['message'] = "cw_sync_encaissement remplie ";
 			    $Status['nombre_success'] += 1;
+			    $Status['cw_sync_encaissement'] = "cw_sync_encaissement remplie ";
 			    // $this->ReturnResponse($Status,$resultat_cw_sync_encaissement);
 			}else{
-				 $Status['status'] = REQUEST_NOT_VALID; 
-			     $Status['message'] = "cw_sync_encaissement non remplie";
+				 // $Status['status'] = REQUEST_NOT_VALID; 
 			     $Status['Nombre_erreur'] += 1;
+			     $Status['cw_sync_encaissement'] = "cw_sync_encaissement non remplie";
 			}
 		    // var_dump($req2);exit();
 			$REG_ID = NULL;
@@ -401,20 +402,10 @@
 			// Verfication avant insertion 
 			$requeteVerif = $this->dbConn->prepare("SELECT * FROM cw_identificationdette WHERE DET_REFDETTE = :DET_REFDETTE ");
 		    $requeteVerif->bindParam(':DET_REFDETTE', $DET_REFDETTE);
-		    $requeteVerif->execute();
+		   $Verif_identificationdette = $requeteVerif->execute();
 		    $resultatsVerif = $requeteVerif->fetch(PDO::FETCH_ASSOC);
+		    // var_dump(count($resultatsVerif) );exit();
 
-		    if($resultatsVerif){
-
-			    // $Status['status'] = SUCCESS_RESPONSE; 
-			    // $Status['message'] = "cw_identificationdette trouvée ";
-			    $Status['nombre_success'] += 1;
-			    // $this->ReturnResponse($Status,$resultatsVerif);
-			}else{
-				 $Status['status'] = REQUEST_NOT_VALID; 
-			     $Status['message'] = "cw_identificationdette non trouvée";
-			     $Status['Nombre_erreur'] += 1;
-			}
 		    // Requête (1)
 		     $verifIRO_EXERCICE =  $resultatsVerif['IRO_EXERCICE'];
 		     $verifIRO_NUMERO=  $resultatsVerif['IRO_NUMERO'];
@@ -423,9 +414,16 @@
 		     $montant_mis_a_jour = floatval($resultatsVerif['DET_RESTANTDU'])-$ENC_MONTANT;
 
 
-		     // Code de verif 
-		     //var_dump($resultatsVerif);exit();
-		     if ($resultatsVerif=="") {
+		     $countFact = $this->dbConn->prepare("SELECT count(*) as Num_fact FROM cw_identificationdette WHERE DET_REFDETTE = :DET_REFDETTE ");
+		    $countFact->bindParam(':DET_REFDETTE', $DET_REFDETTE);
+		   $Verif_identificationdette = $countFact->execute();
+		    $resultatscountFact = $countFact->fetch(PDO::FETCH_ASSOC);
+		    // var_dump($resultatscountFact['Num_fact']);exit();
+		     $nombre_facture_enregistrer_dans_cw_identificationdette =floatval($resultatscountFact['Num_fact']);
+		     // // Code de verif 
+		    // echo $nombre_facture_enregistrer_dans_cw_identificationdette;
+		     // var_dump($nombre_facture_enregistrer_dans_cw_identificationdette);exit();
+		     if ($nombre_facture_enregistrer_dans_cw_identificationdette == 0) {
 		     	# code...
 		    
 		     // Code de verif 
@@ -459,11 +457,12 @@
 			    // $Status['status'] = SUCCESS_RESPONSE; 
 			    // $Status['message'] = "cw_identificationdette remplie ";
 			    $Status['nombre_success'] += 1;
+			     $Status['insert_cw_identificationdette'] = 'cw_identificationdette remplie ';
 			    // $this->ReturnResponse($Status,$Req6);
 			}else{
-				 $Status['status'] = REQUEST_NOT_VALID; 
-			     $Status['message'] = "cw_identificationdette non remplie";
+				 // $Status['status'] = REQUEST_NOT_VALID; 
 			     $Status['Nombre_erreur'] += 1;
+			     $Status['insert_cw_identificationdette'] = "cw_identificationdette non remplie";
 			}
 			// var_dump($Req6);exit();
 
@@ -480,11 +479,12 @@
 			    // $Status['status'] = SUCCESS_RESPONSE; 
 			    // $Status['message'] = "cw_identificationdette remplie ";
 			    $Status['nombre_success'] += 1;
+			    $Status['update_cw_identificationdette'] = 'Mise à jour effectuée';
 			    // $this->ReturnResponse($Status,$Req_);
 			}else{
-				 $Status['status'] = REQUEST_NOT_VALID; 
-			     $Status['message'] = "cw_identificationdette non remplie";
+				 // $Status['status'] = REQUEST_NOT_VALID; 
 			     $Status['Nombre_erreur'] += 1;
+			     $Status['update_cw_identificationdette'] = "Mise à jour non effectuée";
 			}
 		     		// var_dump($Req_);exit();
 		     }
@@ -503,10 +503,12 @@
 			    // $Status['status'] = SUCCESS_RESPONSE; 
 			    // $Status['message'] = "cw_identificationdette remplie ";
 			    $Status['nombre_success'] += 1;
+			    $Status['cw_sync_facture'] = 'Mise à jour effectuée';
 			    // $this->ReturnResponse($Status,$Req_);
 			}else{
 			 
 			     $Status['Nombre_erreur'] += 1;
+			      $Status['cw_sync_facture'] = 'Mise à jour non effectuée';
 			}
 		     		//var_dump($Req_Facture);exit();
 
@@ -520,17 +522,17 @@
 		     	// Cw_sync_reglement
 		       $requete3 = $this->dbConn->prepare("
 		       	INSERT INTO  cw_reglement (REG_ID,ENC_ID,IRO_EXERCICE,IRO_NUMERO,IRO_NUMERODANSROLE,REG_MONTANT,REG_MULTI,REG_BORDEREAU)
-			 VALUES (NULL,$ENC_ID,$verifIRO_EXERCICE,$verifIRO_NUMERO,$verifIRO_NUMERODANSROLE,$REG_MONTANT,$REG_MULTI,$REG_BORDEREAU)");
+			 VALUES (NULL,$ENC_ID,$IRO_EXERCICE,$IRO_NUMERO,$IRO_NUMERODANSROLE,$REG_MONTANT,$REG_MULTI,$REG_BORDEREAU)");
 
-			$requete3->bindParam(':REG_ID',$REG_ID);
-			$requete3->bindParam(':ENC_ID',$ENC_ID);
-			var_dump($ENC_ID);
-			$requete3->bindParam(':IRO_EXERCICE',$verifIRO_EXERCICE);
-			$requete3->bindParam(':IRO_NUMERO',$verifIRO_NUMERO);
-			$requete3->bindParam(':IRO_NUMERODANSROLE',$verifIRO_NUMERODANSROLE);
-			$requete3->bindParam(':REG_MONTANT',$REG_MONTANT);
-			$requete3->bindParam(':REG_MULTI',$REG_MULTI);
-			$requete3->bindParam(':REG_BORDEREAU',$REG_BORDEREAU);
+			// var_dump($requete3);exit();
+			// $requete3->bindParam(':REG_ID',$REG_ID);
+			// $requete3->bindParam(':ENC_ID',$ENC_ID);
+			// $requete3->bindParam(':IRO_EXERCICE',$verifIRO_EXERCICE);
+			// $requete3->bindParam(':IRO_NUMERO',$verifIRO_NUMERO);
+			// $requete3->bindParam(':IRO_NUMERODANSROLE',$verifIRO_NUMERODANSROLE);
+			// $requete3->bindParam(':REG_MONTANT',$REG_MONTANT);
+			// $requete3->bindParam(':REG_MULTI',$REG_MULTI);
+			// $requete3->bindParam(':REG_BORDEREAU',$REG_BORDEREAU);
 			
 			// Provenant d'une facture
 			
@@ -538,8 +540,10 @@
 		    // var_dump($Req3);
 		    	if($Req3){
 			    $Status['nombre_success'] += 1;
+			     $Status['cw_reglement'] = 'remplie';
 				}else{		 
 				     $Status['Nombre_erreur'] += 1;
+				      $Status['cw_reglement'] = 'non remplie';
 				}	
 			     		
 
@@ -566,14 +570,16 @@
 		    $Req5 = $requete5->execute();
 				if($Req5){
 			    $Status['nombre_success'] += 1;
+			     $Status['cw_sync_reglement'] = 'remplie';
 				}else{		 
 				     $Status['Nombre_erreur'] += 1;
+				     $Status['cw_sync_reglement'] = 'non remplie';
 				}
 		        // var_dump($Req5);
 		     	// Cw_sync_reglement
 
 		     $rec_contenu = "Encaissement:".$ENC_MONTANT."Facture:".$DET_REFDETTE."timbre:".$ENC_FRAIS;
-		     $REC_NUMERO = date("Y").date('m').date('d').date('s');
+		     $REC_NUMERO = date("Y").date('m').date('d').date('s').date('s');
 		     // var_dump($rec_contenu);exit();
 		     // Cw_recu
 		    $requete_recu = $this->dbConn->prepare("INSERT INTO  cw_recu (REC_ID,rec_contenu,REC_NUMERO,ENC_ID)
@@ -590,47 +596,26 @@
 		    $Req_recu = $requete_recu->execute();
 		    if($Req_recu){
 			    $Status['nombre_success'] += 1;
+			       $Status['message_success'] = 'Recu générer';
 				}else{		 
-				     $Status['Nombre_erreur'] += 1;
+				     $Status['Recu non générer'] += 1;
+				     $Status['message_erreur'] = 'Recu non générer';
 				}
 
-				if ($Status['nombre_success'] == 9) {
+				if ($Status['nombre_success'] == 8) {
 					$this->dbConn->commit();
+					 $Status['Commit'] = 'Sauvegarde effectuer';
 				}else{
 					$this->dbConn->rollBack();
+					$Status['rollBack'] = 'Sauvegarde non effectuer';
 				}
-				$this->ReturnResponse($Status,"---");
-		     // var_dump($Req_recu);
-		     // exit();
-		    // Cw_recu
-
-		    /*
-			* Décision transaction
-			*/
-			// $this->dbConn->rollBack();
-
-			/*
-			* Décision transaction
-			*/
-
-					
-		    // $resultats2 = $requete2->fetch(PDO::FETCH_ASSOC);
-		    // var_dump($Req);exit();
-		 //    if ($Req3) {
-			//  echo " Success Pour L'instant ";
-			// }else{
-			// 	echo " Erreur Pour L'instant ";
-			// }
-
-
-
-
-		    
-		    
-		   
+				$this->ReturnResponse($Status,"--- Fin du traitements ---");
+		
+  
 
 		} catch (Exception $e) {
 			$this->throwError(ACCESS_TOKEN_ERRORS, ' Le token a Expiré ');
+			$this->dbConn->rollBack();
 			
 		}
 
