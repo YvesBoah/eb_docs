@@ -285,6 +285,25 @@
 		    	
 		    // Requête (1)
 		     $DET_RESTANTDU =  floatval($resultats1['DET_RESTANTDU']);
+		     // var_dump($DET_RESTANTDU);exit();
+		     /*
+		     * Conditions pour eviter les montants supérieures au restantdu
+		      */
+		    if($ENC_MONTANT > $DET_RESTANTDU){
+			    $Status['Erreur'] = 802;
+			    $msg = "Le montant à régler est supérieure au restantdu";
+			    $this->dbConn->rollBack();
+			    $this->ReturnResponse($Status,$msg);
+			}
+			if ($ENC_MONTANT<=200) {
+				$Status['Erreur'] = 805;
+			    $msg = "Le montant à régler est trop peu";
+			    $this->dbConn->rollBack();
+			    $this->ReturnResponse($Status,$msg);
+			}
+		     /*
+		     * Conditions pour eviter les montants supérieures au restantdu
+		      */
 		    
 		     // Provenant d'une facture
 			     // Calcul de l'encaissement
