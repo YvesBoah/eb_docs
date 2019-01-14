@@ -3,6 +3,7 @@
 
 	class Api extends Rest{
 		public $dbConn;
+		public $hote = '192.168.23.128';
 		public function __construct(){
 			parent::__construct();
 			$db = new Db_connect;
@@ -239,10 +240,54 @@
 			//Initialisation des Propriétés
 			$DET_REFDETTE = $this->validateParameter('DET_REFDETTE',$this->param['DET_REFDETTE'],STRING);
 			$ENC_MONTANT = $this->validateParameter('ENC_MONTANT',$this->param['ENC_MONTANT'],INTEGER);
+
+
+/*
+* Récupération du montant du timbre
+ */
+
+
+$curl = curl_init();
+
+curl_setopt_array($curl, array(
+  CURLOPT_URL => $this->hote."/Cw_Application/Layers/Bibliotheques/PROCESS_CW/index.php?r=Encaissement/Timbre/Calcul&MONTANT=".$ENC_MONTANT,
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => "",
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 30,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => "GET",
+  CURLOPT_POSTFIELDS => "",
+
+));
+
+$response = curl_exec($curl);
+$err = curl_error($curl);
+
+curl_close($curl);
+
+if ($err) {
+  echo "cURL Error #:" . $err;
+} else {
+	header('Content-Type: application/json');
+ 	$reponses = json_decode($response); 
+    $Timbre = $reponses->VAL_TBRE;
+}
+// exit();
+/*
+* Récupération du montant du timbre
+ */
+
+
+
+
+
+	// $chemin_access = $this->hote."/Cw_Application/Layers/Bibliotheques/PROCESS_CW/index.php?r=Encaissement/Timbre/Calcul&MONTANT=".$ENC_MONTANT;
+	// 	var_dump($chemin_access);exit();
 			// Par défauts -Automatique 
 			$ENC_ID = NULL ;
 			$CAIS_ID = 1 ;
-			$ENC_FRAIS = 120 ;
+			$ENC_FRAIS = $Timbre ;
 			$ENC_NUMERO_CHEQUE = 0 ;
 			$ENC_MONTANT_SUP = 0 ;
 			$ENC_ECART = NULL ;
@@ -295,7 +340,7 @@
 			    $this->dbConn->rollBack();
 			    $this->ReturnResponse($Status,$msg);
 			}
-			if ($ENC_MONTANT<=200) {
+			if ($ENC_MONTANT<=0) {
 				$Status['Erreur'] = 805;
 			    $msg = "Le montant à régler est trop peu";
 			    $this->dbConn->rollBack();
