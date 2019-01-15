@@ -40,7 +40,7 @@
 
 		} catch (Exception $e) {
 			$this->throwError(JWT_ERROR_PROCESSING, $e->getMessage());
-			
+		
 		}
 
 	}
@@ -226,11 +226,12 @@
 	/**************************** Section Encaissement ***************************/
 	public function EncaissementFacturesClient(){
 		try{
-
 			/*
 			* Debut de transaction
 			*/
 			$this->dbConn->beginTransaction();
+			$token = $this->getBearerToken();
+			$payload = JWT::decode($token,SECRETE_KEY,['HS256']);
 			
 			// $zzz =$this->dbConn->rollBack();
 			// var_dump($zz);exit();
@@ -240,6 +241,51 @@
 			//Initialisation des Propriétés
 			$DET_REFDETTE = $this->validateParameter('DET_REFDETTE',$this->param['DET_REFDETTE'],STRING);
 			$ENC_MONTANT = $this->validateParameter('ENC_MONTANT',$this->param['ENC_MONTANT'],INTEGER);
+
+
+
+/*
+* Création ou Ouverture de session
+ */
+
+// var_dump($payload->userId);exit();
+$curl_session = curl_init();
+
+curl_setopt_array($curl_session, array(
+  CURLOPT_URL => $this->hote."/Cw_Application/Layers/Bibliotheques/PROCESS_CW/index.php?r=Session/Session/OuvrirSessionCaisse&USR_ID=".$payload->userId,
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => "",
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 30,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => "GET",
+  CURLOPT_POSTFIELDS => "",
+
+));
+
+$response_session = curl_exec($curl_session);
+$err_session = curl_error($curl_session);
+
+curl_close($curl_session);
+
+if ($err_session) {
+  echo "cURL Error #:" . $err_session;
+} else {
+	header('Content-Type: application/json');
+ 	$response_sessions = json_decode($response_session); 
+    $Caisse_Id = $response_sessions->CAIS_ID;
+
+      $Status['Session'] = "Ouverture de session pour cette opération";
+	  $Status['nombre_success'] += 1;
+
+}
+
+//var_dump($Caisse_Id);exit();
+
+/*
+* Création de session
+ */
+
 
 
 /*
@@ -286,7 +332,7 @@ if ($err) {
 	// 	var_dump($chemin_access);exit();
 			// Par défauts -Automatique 
 			$ENC_ID = NULL ;
-			$CAIS_ID = 1 ;
+			$CAIS_ID = $Caisse_Id ;
 			$ENC_FRAIS = $Timbre ;
 			$ENC_NUMERO_CHEQUE = 0 ;
 			$ENC_MONTANT_SUP = 0 ;
@@ -664,12 +710,56 @@ if ($err) {
 				}else{		 
 				     $Status['Recu non générer'] += 1;
 				     $Status['message_erreur'] = 'Recu non générer';
+				    //  $this->dbConn->rollBack();
+				    // $this->ReturnResponse($Status,"--- Processus intérrompu ---"); 
 				}
 
+
+/*
+*   Fermeture de session
+ */
+
+
+$curl_Femerture_session = curl_init();
+
+curl_setopt_array($curl_Femerture_session, array(
+  CURLOPT_URL => $this->hote."/Cw_Application/Layers/Bibliotheques/PROCESS_CW/index.php?r=Session/Session/FermerSessionCaisse&CAIS_ID=".$Caisse_Id,
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => "",
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 30,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => "GET",
+  CURLOPT_POSTFIELDS => "",
+  CURLOPT_HTTPHEADER => array(
+    "Postman-Token: 56d0beab-4123-4632-b388-b63694a9fff6",
+    "cache-control: no-cache"
+  ),
+));
+
+$response_Femerture_session = curl_exec($curl_Femerture_session);
+$err_Femerture_session = curl_error($curl_Femerture_session);
+
+curl_close($curl_Femerture_session);
+
+if ($err_Femerture_session) {
+  echo "cURL Error #:" . $err_Femerture_session;
+} else {
+  // echo $response_Femerture_session;
+  // 
+}
+/*
+*   Fermeture de session
+ */
 				if ($Status['nombre_success'] == 8) {
 					$this->dbConn->commit();
 					 $Status['Commit'] = 'Sauvegarde effectuer';
-				}else{
+				}
+				else if ($Status['nombre_success'] <= 7) {
+					$this->dbConn->rollBack();
+					$Status['rollBack'] = 'Sauvegarde non effectuer';
+				}
+				else{
 					$this->dbConn->rollBack();
 					$Status['rollBack'] = 'Sauvegarde non effectuer';
 				}
