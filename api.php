@@ -109,19 +109,19 @@
 			    $Status['message'] = "Voici les factures du client ".$resultats2[0]['DET_NOMPAYEUR'];
 			    $Status['success'] = true; 
 			    $Status['resultat']['Nombre_fact'] = count($resultats2);
-			   
+			   $this->ReturnResponse($Status,$resultats2);
 
 			    // echo json_encode($retour);
 
 			}
 		    	
-		    if (!is_array($resultats2)) {
+		    else {
 		    	$Message = "Aucunes factures clients trouvées";
 		    	$define = REQUEST_NOT_VALID;
 		    	$this->ReturnResponse($define,$Message);
 		    }
 		    
-		    $this->ReturnResponse($Status,$resultats2);
+		    
 
 		} catch (Exception $e) {
 			$this->throwError(ACCESS_TOKEN_ERRORS, ' Le token a Expiré ');
