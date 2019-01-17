@@ -748,8 +748,45 @@ if ($err_Femerture_session) {
   // echo $response_Femerture_session;
   // 
 }
+
 /*
 *   Fermeture de session
+ */
+
+/*
+*   Déconnexion de l'utilisateur
+ */
+
+
+$curl_deco = curl_init();
+
+curl_setopt_array($curl_deco, array(
+  CURLOPT_URL => $this->hote."/Cw_Application/Layers/Bibliotheques/PROCESS_CW/index.php?r=Session/SessionUser/UpdateSession&idusr=".$payload->userId,
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => "",
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 30,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => "GET",
+  CURLOPT_POSTFIELDS => "",
+  CURLOPT_HTTPHEADER => array(
+    "Postman-Token: 7499a5d9-d9df-4f1d-ae15-2b852ff027a5",
+    "cache-control: no-cache"
+  ),
+));
+
+$response_deco = curl_exec($curl_deco);
+$err_deco = curl_error($curl_deco);
+
+curl_close($curl_deco);
+
+if ($err_deco) {
+  echo "cURL Error #:" . $err_deco;
+} else {
+  echo $response_deco;
+}
+/*
+*   Déconnexion de l'utilisateur
  */
 				if ($Status['nombre_success'] == 8) {
 					$this->dbConn->commit();
